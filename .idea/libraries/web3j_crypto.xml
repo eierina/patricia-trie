@@ -1,0 +1,18 @@
+<component name="libraryTable">
+  <library name="web3j.crypto" type="repository">
+    <properties maven-id="org.web3j:crypto:5.0.0" />
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/web3j/crypto/5.0.0/crypto-5.0.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/web3j/abi/5.0.0/abi-5.0.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/web3j/rlp/5.0.0/rlp-5.0.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/web3j/utils/5.0.0/utils-5.0.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/bouncycastle/bcprov-jdk15on/1.65/bcprov-jdk15on-1.65.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-databind/2.8.11.6/jackson-databind-2.8.11.6.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-annotations/2.8.0/jackson-annotations-2.8.0.jar!/" />
+      <root url="jar://$MAVEN_REPOSITORY$/com/fasterxml/jackson/core/jackson-core/2.8.10/jackson-core-2.8.10.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
