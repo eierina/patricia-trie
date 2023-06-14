@@ -86,46 +86,6 @@ class PatriciaTrie() {
 
             }
 
-            /*
-                        matched := PrefixMatchedLen(ext.Path, nibbles)
-                        if matched < len(ext.Path) {
-                            // E 01020304
-                            // + 010203 good
-                            extNibbles, branchNibble, extRemainingnibbles := ext.Path[:matched], ext.Path[matched], ext.Path[matched+1:]
-                            branch := NewBranchNode()
-                            if len(extRemainingnibbles) == 0 {
-                                // E 0102030
-                                // + 010203 good
-                                branch.SetBranch(branchNibble, ext.Next)
-                            } else {
-                                // E 01020304
-                                // + 010203 good
-                                newExt := NewExtensionNode(extRemainingnibbles, ext.Next)
-                                branch.SetBranch(branchNibble, newExt)
-                            }
-
-                            if matched < len(nibbles) {
-                                nodeBranchNibble, nodeLeafNibbles := nibbles[matched], nibbles[matched+1:]
-                                remainingLeaf := NewLeafNodeFromNibbles(nodeLeafNibbles, value)
-                                branch.SetBranch(nodeBranchNibble, remainingLeaf)
-                            } else if matched == len(nibbles) {
-                                branch.SetValue(value)
-                            } else {
-                                panic(fmt.Sprintf("too many matched (%v > %v)", matched, len(nibbles)))
-                            }
-
-                            // if there is no shared extension nibbles any more, then we don't need the extension node
-                            // any more
-                            // E 01020304
-                            // + 1234 good
-                            if len(extNibbles) == 0 {
-                                *node = branch
-                            } else {
-                                // otherwise create a new extension node
-                                *node = NewExtensionNode(extNibbles, branch)
-                            }
-                            return
-            * */
         }
     }
 }
