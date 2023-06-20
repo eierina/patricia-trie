@@ -1,241 +1,133 @@
+/*
+ * Copyright 2023 Edoardo Ierina
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package new
 
 import org.web3j.crypto.Hash.sha3
 import org.web3j.rlp.RlpDecoder
-import org.web3j.rlp.RlpEncoder
 import org.web3j.rlp.RlpList
 import org.web3j.rlp.RlpString
+import org.web3j.utils.Numeric
 
-class PatriciaTrie() {
-
-    var root: Node = EmptyNode()
-
-    fun put(key: ByteArray, value: ByteArray) {
-        root = put(root, key.toNibbles(), value)
-    }
-
-    private fun put(node: Node, nibblesKey: ByteArray, value: ByteArray): Node {
-        if (node is EmptyNode) {
-            return LeafNode.createFromNibbles(nibblesKey, value)
-        }
-
-        if (node is LeafNode) {
-            val matchingLength = node.path.prefixMatchingLength(nibblesKey)
-
-            if(matchingLength == node.path.size && matchingLength == nibblesKey.size) {
-                return LeafNode.createFromNibbles(nibblesKey, value)
-            }
-
-            val branchNode = if(matchingLength == node.path.size) {
-                BranchNode.createWithValue(node.value)
-            } else if(matchingLength == nibblesKey.size) {
-                BranchNode.createWithValue(value)
-            } else {
-                BranchNode.create()
-            }
-
-            val extOrBranchNode = if(matchingLength > 0) {
-                ExtensionNode.createFromNibbles(node.path.copyOfRange(0, matchingLength), branchNode)
-            } else {
-                branchNode
-            }
-
-            if(matchingLength < node.path.size) {
-                branchNode.setBranch(
-                    node.path[matchingLength],
-                    LeafNode.createFromNibbles(
-                        node.path.copyOfRange(matchingLength + 1, node.path.size),
-                        node.value
-                    )
-                )
-            }
-
-            if(matchingLength < nibblesKey.size) {
-                branchNode.setBranch(
-                    nibblesKey[matchingLength],
-                    LeafNode.createFromNibbles(
-                        nibblesKey.copyOfRange(matchingLength + 1, node.path.size),
-                        value
-                    )
-                )
-            }
-
-            return extOrBranchNode
-        }
-
-        if(node is BranchNode) {
-            if (nibblesKey.isNotEmpty()) {
-                val branch = nibblesKey[0].toInt()
-                node.branches[branch] = put(
-                    node.branches[branch],
-                    nibblesKey.copyOfRange(1, nibblesKey.size),
-                    value
-                )
-            } else {
-                node.setValue(value)
-            }
-            return node
-        }
-
-        if(node is ExtensionNode) {
-            val matchingLength = node.path.prefixMatchingLength(nibblesKey)
-            if(matchingLength < node.path.size) {
-                val extNibbles = node.path.copyOfRange(0, matchingLength)
-                val branchNibble = node.path[matchingLength]
-                val extRemainingNibbles = node.path.copyOfRange(matchingLength + 1, node.path.size)
-
-            }
-
-        }
-    }
-}
-
+/**
+ * The base class for all types of nodes in a Patricia Trie.
+ */
 abstract class Node
 {
+    /**
+     * Get the encoded version of this node.
+     * @return encoded byte array of this node.
+     */
     abstract val encoded: ByteArray
 
+    /**
+     * Get the SHA-3 hash of the encoded node.
+     * @return hash of the encoded node.
+     */
     open val hash: ByteArray
         get() = sha3(encoded)
-}
 
-class EmptyNode : Node()
-{
-    override val encoded: ByteArray
-        get() = RlpEncoder.encode(RlpString.create(ByteArray(0)))
+    /**
+     * Provide a String representation of the Node for debugging.
+     * @return String representation of the Node.
+     */
+    override fun toString(): String {
+        return "NodeType: ${javaClass.simpleName} Hash: ${Numeric.toHexString(hash)} Encoded: ${Numeric.toHexString(encoded)}"
+    }
 
-}
+    /**
+     * Convert a ByteArray from prefixed nibbles to bytes.
+     * Prefixed nibbles always have an even count.
+     * @return ByteArray of bytes.
+     */
+    protected fun ByteArray.fromPrefixedNibblesToBytes(): ByteArray {
+        require(this.size % 2 == 0) { "Nibble array size must be even" }
 
-class LeafNode private constructor(
-    val path: ByteArray, // NOTE: this is stored as a nibbles array
-    val value: ByteArray
-): Node() {
-    override val encoded: ByteArray
-        get() {
-            return RlpEncoder.encode(
-                RlpList(
-                    RlpString.create(prefixedNibbles(path).fromPrefixedNibblesToBytes()),
-                    RlpString.create(value)
-                )
-            )
+        val result = ByteArray(this.size / 2)
+        for (i in this.indices step 2) {
+            // Since these are nibbles, we do not AND with 0xF0 and 0x0F.
+            // Before calling this function, make sure to validate the input data (sanity check).
+            // Each byte in the input should be a valid nibble, i.e., in the range 0..15.
+            result[i / 2] = ((this[i].toInt() shl 4) or (this[i + 1].toInt())).toByte()
         }
-
-    private fun prefixedNibbles(nibbles: ByteArray): ByteArray {
-        return (if (nibbles.size % 2 > 0) byteArrayOf(3) else byteArrayOf(2, 0)).plus(nibbles)
+        return result
     }
 
     companion object {
-        fun createFromBytes(key: ByteArray, value: ByteArray): LeafNode {
-            require(key.isNotEmpty()) { "Invalid empty key" }
-            require(value.isNotEmpty()) { "Invalid empty value" }
 
-            return LeafNode(key.toNibbles(), value)
+        /**
+         * Create a Node from a RLP encoded byte array.
+         * @param encoded RLP encoded byte array.
+         * @return Node created from the RLP encoded byte array.
+         */
+        fun createFromRLP(encoded: ByteArray): Node {
+            return if(encoded.size == 32) {
+                HashNode.create(encoded)
+            } else {
+                val outerList = RlpDecoder.decode(encoded) as RlpList
+                createFromRLP(outerList)
+            }
         }
 
-        fun createFromNibbles(key: ByteArray, value: ByteArray): LeafNode {
-            require(key.isNotEmpty()) { "Invalid empty key" }
-            require(value.isNotEmpty()) { "Invalid empty value" }
+        /**
+         * Create a Node from a RLP list.
+         * @param outerList RLP list.
+         * @return Node created from the RLP list.
+         */
+        private fun createFromRLP(outerList: RlpList): Node {
+            val rlpList = outerList.values[0] as RlpList
 
-            return LeafNode(key, value)
-        }
-    }
-}
+            return when (rlpList.values.size) {
+                2 -> {
+                    var path = (rlpList.values[0] as RlpString).bytes.toNibbles()
+                    val valueOrNode = rlpList.values[1]
+                    val select = path[0].toInt()
 
-class BranchNode private constructor(
-    val branches: Array<Node>,
-    var value: ByteArray
-): Node() {
-    override val encoded: ByteArray
-        get() {
-            return RlpEncoder.encode(RlpList(branches.map { node ->
-                val encodedNode = node.encoded
-                when {
-                    node is EmptyNode -> RlpString.create(ByteArray(0))
-                    // NOTE: in the next line, if node can be a HashNode then we need to call node.hash
-                    // otherwise we can optimize and call Hash.sha3(encodedNode)
-                    encodedNode.size >= 32 -> RlpString.create(node.hash)
-                    else -> RlpString.create(encodedNode)
-                }
-            }.plus(RlpString.create(value))))
-        }
-
-    fun setBranch(nibbleKey: Byte, node: Node) {
-        branches[nibbleKey.toInt()] = node
-    }
-
-    fun setValue(value: ByteArray) {
-        this.value = value
-    }
-
-    companion object {
-        @JvmStatic
-        private val emptyNode = EmptyNode()
-
-        fun create(): BranchNode {
-            return BranchNode(Array(16){ emptyNode }, ByteArray(0))
-        }
-
-        fun createWithValue(value: ByteArray): BranchNode {
-            return BranchNode(Array(16){ emptyNode }, value)
-        }
-    }
-}
-
-class ExtensionNode private constructor(
-    val path: ByteArray,
-    val innerNode: Node
-): Node() {
-    override val encoded: ByteArray
-        get() {
-            val encodedInnerNode = innerNode.encoded
-            return RlpEncoder.encode(
-                RlpList(
-                    RlpString.create(prefixedNibbles(path).fromPrefixedNibblesToBytes()),
-                    if(encodedInnerNode.size >= 32) {
-                        RlpString.create(innerNode.hash)
-                    } else {
-                        RlpDecoder.decode(encodedInnerNode) // TODO: review
+                    path = when (select) {
+                        2, 0 -> path.copyOfRange(2, path.size)
+                        3, 1 -> path.copyOfRange(1, path.size)
+                        else -> throw IllegalArgumentException("Invalid path")
                     }
-                )
-            )
+
+                    when (valueOrNode) {
+                        is RlpString -> {
+                            when(select) {
+                                2,3 -> LeafNode.createFromNibbles(path, valueOrNode.bytes)
+                                else -> ExtensionNode.createFromNibbles(path, createFromRLP(valueOrNode.bytes))
+                            }
+                        }
+                        is RlpList -> ExtensionNode.createFromNibbles(path, createFromRLP(valueOrNode))
+                        else -> throw IllegalArgumentException("Invalid RLP encoding")
+                    }
+                }
+                17 -> {
+                    val branches = rlpList.values.subList(0, 16).mapIndexedNotNull { index, value ->
+                        val key = index.toByte()
+                        when (value) {
+                            is RlpString -> if (value.bytes.isNotEmpty()) key to createFromRLP(value.bytes) else null
+                            is RlpList -> key to createFromRLP(value)
+                            else -> throw IllegalArgumentException("Invalid RLP encoding")
+                        }
+                    }.toTypedArray()
+
+                    val value = (rlpList.values[16] as RlpString).bytes
+                    BranchNode.createWithBranches(*branches, value = value)
+                }
+                else -> throw IllegalArgumentException("Invalid RLP encoding")
+            }
         }
-
-    private fun prefixedNibbles(nibbles: ByteArray): ByteArray {
-        return (if (nibbles.size % 2 > 0) byteArrayOf(1) else byteArrayOf(0, 0)).plus(nibbles)
-    }
-
-    companion object {
-        fun createFromBytes(key: ByteArray, node: Node): ExtensionNode {
-            require(key.isNotEmpty()) { "Invalid empty key" }
-
-            return ExtensionNode(key.toNibbles(), node)
-        }
-
-        fun createFromNibbles(key: ByteArray, node: Node): ExtensionNode {
-            require(key.isNotEmpty()) { "Invalid empty key" }
-
-            return ExtensionNode(key, node)
-        }
     }
 }
-
-fun ByteArray.prefixMatchingLength(other: ByteArray): Int {
-    return this.zip(other).takeWhile { (n1, n2) -> n1 == n2 }.count()
-}
-
-fun ByteArray.toNibbles(): ByteArray {
-    val result = ByteArray(this.size * 2)
-    for (i in this.indices) {
-        result[i * 2] = ((this[i].toInt() shr 4) and 0x0F).toByte()
-        result[i * 2 + 1] = (this[i].toInt() and 0x0F).toByte()
-    }
-    return result
-}
-
-fun ByteArray.fromPrefixedNibblesToBytes(): ByteArray {
-    val result = ByteArray(this.size / 2)
-    for (i in this.indices step 2) {
-        result[i / 2] = ((this[i].toInt() shl 4) or (this[i + 1].toInt())).toByte()
-    }
-    return result
-}
-
