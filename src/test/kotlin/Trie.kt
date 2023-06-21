@@ -7,9 +7,8 @@ import org.web3j.utils.Numeric
 
 class TrieTests {
 
-
     @Test
-    fun `test empty node hash`() {
+    fun testEmptyNodeHashCalculation() {
         val emptyNode = EmptyNode()
         val expectedHash = "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
 
@@ -17,7 +16,7 @@ class TrieTests {
     }
 
     @Test
-    fun `test empty leaf node hash`() {
+    fun testEmptyLeafNodeHashCalculation() {
         val leaf = LeafNode.createFromBytes(byteArrayOf(), byteArrayOf())
         val expectedHash = "0xf9be828fd675253c2e3ecdff4379debab459f376b7554fac193747c676f10f0a"
 
@@ -25,7 +24,7 @@ class TrieTests {
     }
 
     @Test
-    fun `test dummy leaf node hash`() {
+    fun testDummyLeafNodeHashCalculation() {
         val leaf = LeafNode.createFromBytes(byteArrayOf(1, 2, 3, 4), "leaf".toByteArray())
         val expectedHash = "0x2fc0c91eb10b756afb03c8ceafc121c9c2f4eb47b6ef974ba808f8b46067a6d0"
 
@@ -33,7 +32,7 @@ class TrieTests {
     }
 
     @Test
-    fun `test empty branch node hash`() {
+    fun testEmptyBranchNodeHashCalculation() {
         val branch = BranchNode.create()
         val expectedHash = "0xbe0f4440e293a47160b9b148d49212d0616ec5b0a70c99de9bf36515d52e0901"
 
@@ -41,7 +40,7 @@ class TrieTests {
     }
 
     @Test
-    fun `test empty extension node hash`() {
+    fun testEmptyExtensionNodeHashCalculation() {
         val branch = ExtensionNode.createFromNibbles(byteArrayOf(), EmptyNode())
         val expectedHash = "0x9650f4d88ca5e8628148a9c9ced5c6063f7419b93a0bf854258890ddea8f233d"
 
@@ -49,7 +48,7 @@ class TrieTests {
     }
 
     @Test
-    fun `test empty trie has empty node root`() {
+    fun testEmptyTrieRootNode() {
         val trie = PatriciaTrie()
         val expectedHash = "0x56e81f171bcc55a6ff8345e692c0f86e5b48e01b996cadc001622fb5e363b421"
 
@@ -58,7 +57,7 @@ class TrieTests {
     }
 
     @Test
-    fun `test trie with one leaf node`() {
+    fun testTrieWithSingleLeafNode() {
         val trie = PatriciaTrie()
         val key = byteArrayOf(1, 2, 3, 4)
         val value = "leaf".toByteArray()
@@ -73,7 +72,7 @@ class TrieTests {
     }
 
     @Test
-    fun `test trie with one leaf node and a second shorter leaf node`() {
+    fun testTrieWithTwoLeafNodesSecondShorter() {
         val trie = PatriciaTrie()
         trie.put(byteArrayOf(1, 2, 3, 4), "hello".toByteArray())
         trie.put(byteArrayOf(1, 2, 3), "world".toByteArray())
@@ -91,14 +90,14 @@ class TrieTests {
     }
 
     @Test
-    fun `test trie with one leaf node and a second longer leaf node`() {
+    fun testTrieWithTwoLeafNodesSecondLonger() {
         val trie = PatriciaTrie()
         trie.put(byteArrayOf(1, 2, 3, 4), "hello".toByteArray())
         trie.put(byteArrayOf(1, 2, 3, 4, 5, 6), "world".toByteArray())
 
         val node = ExtensionNode.createFromNibbles(
-            byteArrayOf(0, 1, 0, 2, 0, 3, 0, 4),
-            BranchNode.createWithBranch(
+            nibblesKey = byteArrayOf(0, 1, 0, 2, 0, 3, 0, 4),
+            node = BranchNode.createWithBranch(
                 nibbleKey = 0,
                 node = LeafNode.createFromNibbles(byteArrayOf(5, 0, 6), "world".toByteArray()),
                 value = "hello".toByteArray()
@@ -109,7 +108,7 @@ class TrieTests {
     }
 
     @Test
-    fun `test trie with one leaf node and a second same length leaf node`() {
+    fun testTrieWithTwoLeafNodesSameLength() {
         val trie = PatriciaTrie()
         trie.put(byteArrayOf(1, 2, 3, 4), "hello".toByteArray())
         trie.put(byteArrayOf(1, 2, 3, 4), "world".toByteArray())
@@ -123,7 +122,7 @@ class TrieTests {
     }
 
     @Test
-    fun `test trie with prefix matching leaf nodes - first two same length, third matching-length long`() {
+    fun testTrieWithPrefixMatchingLeafNodesThirdMatchingLengthLong() {
         val trie = PatriciaTrie()
         trie.put(byteArrayOf(1, 2, 3, 4), "hello1".toByteArray())
         trie.put(byteArrayOf(1, 2, 3, 5), "hello2".toByteArray())
@@ -145,7 +144,7 @@ class TrieTests {
     }
 
     @Test
-    fun `test trie with prefix matching leaf nodes - first two same length, third shorter and partially matching`() {
+    fun testTrieWithPrefixMatchingLeafNodesThirdShorterPartiallyMatching() {
         val trie = PatriciaTrie()
         trie.put(byteArrayOf(1, 2, 3, 4), "hello1".toByteArray())
         trie.put(byteArrayOf(1, 2, 3, 5), "hello2".toByteArray())
@@ -154,19 +153,18 @@ class TrieTests {
         val node = ExtensionNode.createFromNibbles(
             nibblesKey = byteArrayOf(0, 1, 0, 2, 0),
             node = BranchNode.createWithBranches(
-                Pair(
-                    3, ExtensionNode.createFromNibbles(
-                        byteArrayOf(0),
-                        BranchNode.createWithBranches(
+                Pair(3, ExtensionNode.createFromNibbles(
+                        nibblesKey = byteArrayOf(0),
+                        node = BranchNode.createWithBranches(
                             Pair(4, LeafNode.createFromNibbles(byteArrayOf(), "hello1".toByteArray())),
                             Pair(5, LeafNode.createFromNibbles(byteArrayOf(), "hello2".toByteArray()))
                         )
                     )
                 ),
-                Pair(
-                    5, LeafNode.createFromNibbles(
+                Pair(5, LeafNode.createFromNibbles(
                         nibblesKey = byteArrayOf(),
-                        value = "world".toByteArray())
+                        value = "world".toByteArray()
+                    )
                 )
             )
         )
@@ -175,32 +173,33 @@ class TrieTests {
     }
 
     @Test
-    fun `test trie with leaf nodes - first two same length partially matching, third shorter and no matching`() {
+    fun testTrieWithPartiallyMatchingLeafNodesThirdNoMatch() {
         val trie = PatriciaTrie()
         trie.put(byteArrayOf(1, 2, 3, 4), "hello1".toByteArray())
         trie.put(byteArrayOf(1, 2, 3, 5), "hello2".toByteArray())
         trie.put(byteArrayOf(16, 2, 5), "world".toByteArray())
 
         val node = BranchNode.createWithBranches(
-            Pair(
-                0,
-                ExtensionNode.createFromNibbles(
-                    byteArrayOf(1, 0, 2, 0, 3, 0),
-                    BranchNode.createWithBranches(
-                        Pair(
-                            4,
-                            LeafNode.createFromNibbles(byteArrayOf(), "hello1".toByteArray())
+            Pair(0, ExtensionNode.createFromNibbles(
+                    nibblesKey = byteArrayOf(1, 0, 2, 0, 3, 0),
+                    node = BranchNode.createWithBranches(
+                        Pair(4, LeafNode.createFromNibbles(
+                                nibblesKey = byteArrayOf(),
+                                value = "hello1".toByteArray()
+                            )
                         ),
-                        Pair(
-                            5,
-                            LeafNode.createFromNibbles(byteArrayOf(), "hello2".toByteArray())
+                        Pair(5, LeafNode.createFromNibbles(
+                                nibblesKey = byteArrayOf(),
+                                value = "hello2".toByteArray()
+                            )
                         )
                     )
                 )
             ),
-            Pair(
-                1,
-                LeafNode.createFromNibbles(byteArrayOf(0, 0, 2, 0, 5), "world".toByteArray())
+            Pair(1, LeafNode.createFromNibbles(
+                    nibblesKey = byteArrayOf(0, 0, 2, 0, 5),
+                    value = "world".toByteArray()
+                )
             )
         )
 
@@ -208,7 +207,7 @@ class TrieTests {
     }
 
     @Test
-    fun testPutExtensionFullyMatching() {
+    fun testPatriciaTrieWithStaticTransactionData() {
         val trie = PatriciaTrie()
         trie.put(byteArrayOf(1, 2, 3, 4), "hello1".toByteArray())
         trie.put(byteArrayOf(1, 2, 3, 80), "hello2".toByteArray())
@@ -218,28 +217,43 @@ class TrieTests {
             nibblesKey = byteArrayOf(0, 1, 0, 2, 0, 3),
             node = BranchNode.createWithBranches(
                 Pair(0, LeafNode.createFromNibbles(
-                    nibblesKey = byteArrayOf(4),
-                    value = "hello1".toByteArray())
+                        nibblesKey = byteArrayOf(4),
+                        value = "hello1".toByteArray()
+                    )
                 ),
                 Pair(5, LeafNode.createFromNibbles(
-                    nibblesKey = byteArrayOf(0),
-                    value = "hello2".toByteArray())
+                        nibblesKey = byteArrayOf(0),
+                        value = "hello2".toByteArray()
+                    )
                 ),
-                value = "world".toByteArray())
+                value = "world".toByteArray()
+            )
         )
 
         assertArrayEquals(node.hash, trie.root.hash)
     }
 
     @Test
-    fun `test patricia trie with static data`() {
+    fun `should handle patricia trie with static data from existing transaction correctly`() {
 
         // Source TX data: https://etherscan.io/block/10593417
 
-        val p1 = Pair(Numeric.toHexString(RLP.encodeInt(0)), "0xf8ab81a5852e90edd00083012bc294a3bed4e1c75d00fa6f4e5e6922db7261b5e9acd280b844a9059cbb0000000000000000000000008bda8b9823b8490e8cf220dc7b91d97da1c54e250000000000000000000000000000000000000000000000056bc75e2d6310000026a06c89b57113cf7da8aed7911310e03d49be5e40de0bd73af4c9c54726c478691ba056223f039fab98d47c71f84190cf285ce8fc7d9181d6769387e5efd0a970e2e9")
-        val p2 = Pair(Numeric.toHexString(RLP.encodeInt(1)), "0xf8ab81a6852e90edd00083012bc294a3bed4e1c75d00fa6f4e5e6922db7261b5e9acd280b844a9059cbb0000000000000000000000008bda8b9823b8490e8cf220dc7b91d97da1c54e250000000000000000000000000000000000000000000000056bc75e2d6310000026a0d77c66153a661ecc986611dffda129e14528435ed3fd244c3afb0d434e9fd1c1a05ab202908bf6cbc9f57c595e6ef3229bce80a15cdf67487873e57cc7f5ad7c8a")
-        val p3 = Pair(Numeric.toHexString(RLP.encodeInt(2)), "0xf86d8229f185199c82cc008252089488e9a2d38e66057e18545ce03b3ae9ce4fc360538702ce7de1537c008025a096e7a1d9683b205f697b4073a3e2f0d0ad42e708f03e899c61ed6a894a7f916aa05da238fbb96d41a4b5ec0338c86cfcb627d0aa8e556f21528e62f31c32f7e672")
-        val p4 = Pair(Numeric.toHexString(RLP.encodeInt(3)), "0xf86f826b2585199c82cc0083015f9094e955ede0a3dbf651e2891356ecd0509c1edb8d9c8801051fdc4efdc0008025a02190f26e70a82d7f66354a13cda79b6af1aa808db768a787aeb348d425d7d0b3a06a82bd0518bc9b69dc551e20d772a1b06222edfc5d39b6973e4f4dc46ed8b196")
+        val p1 = Pair(
+            Numeric.toHexString(RLP.encodeInt(0)),
+            "0xf8ab81a5852e90edd00083012bc294a3bed4e1c75d00fa6f4e5e6922db7261b5e9acd280b844a9059cbb0000000000000000000000008bda8b9823b8490e8cf220dc7b91d97da1c54e250000000000000000000000000000000000000000000000056bc75e2d6310000026a06c89b57113cf7da8aed7911310e03d49be5e40de0bd73af4c9c54726c478691ba056223f039fab98d47c71f84190cf285ce8fc7d9181d6769387e5efd0a970e2e9"
+        )
+        val p2 = Pair(
+            Numeric.toHexString(RLP.encodeInt(1)),
+            "0xf8ab81a6852e90edd00083012bc294a3bed4e1c75d00fa6f4e5e6922db7261b5e9acd280b844a9059cbb0000000000000000000000008bda8b9823b8490e8cf220dc7b91d97da1c54e250000000000000000000000000000000000000000000000056bc75e2d6310000026a0d77c66153a661ecc986611dffda129e14528435ed3fd244c3afb0d434e9fd1c1a05ab202908bf6cbc9f57c595e6ef3229bce80a15cdf67487873e57cc7f5ad7c8a"
+        )
+        val p3 = Pair(
+            Numeric.toHexString(RLP.encodeInt(2)),
+            "0xf86d8229f185199c82cc008252089488e9a2d38e66057e18545ce03b3ae9ce4fc360538702ce7de1537c008025a096e7a1d9683b205f697b4073a3e2f0d0ad42e708f03e899c61ed6a894a7f916aa05da238fbb96d41a4b5ec0338c86cfcb627d0aa8e556f21528e62f31c32f7e672"
+        )
+        val p4 = Pair(
+            Numeric.toHexString(RLP.encodeInt(3)),
+            "0xf86f826b2585199c82cc0083015f9094e955ede0a3dbf651e2891356ecd0509c1edb8d9c8801051fdc4efdc0008025a02190f26e70a82d7f66354a13cda79b6af1aa808db768a787aeb348d425d7d0b3a06a82bd0518bc9b69dc551e20d772a1b06222edfc5d39b6973e4f4dc46ed8b196"
+        )
 
         assertEquals("0xb0c43213c86c2cacce8ceef965b881529d31e5be93ad6cefcef2f319a20ef1b5", Hash.sha3(p1.second))
         assertEquals("0x5bbbf64bd0f08465acbe30adb2be807488c3847c94a7dfabaffa3e25ab3a604a", Hash.sha3(p2.second))
