@@ -16,6 +16,11 @@
 
 package trie
 
+import datasource.KeyValueStore
+import datasource.SimpleKeyValueStore
+import utils.startsWith
+import utils.toNibbles
+
 /**
  * The Patricia Trie is a space-optimized version of a binary trie.
  * It's an ordered tree data structure used to store a dynamic set or associative array
@@ -54,7 +59,7 @@ class PatriciaTrie {
      * @param key Key as ByteArray.
      * @return Merkle proof as KeyValueStore.
      */
-    fun generateMerkleProof(key: ByteArray) : KeyValueStore {
+    fun generateMerkleProof(key: ByteArray): KeyValueStore {
         return generateMerkleProof(root, key.toNibbles(), SimpleKeyValueStore())
     }
 
@@ -66,7 +71,7 @@ class PatriciaTrie {
      * @param store A simple Key-Value that will collect the trie proofs
      * @return Merkle proof as KeyValueStore.
      */
-    private fun generateMerkleProof(startNode: Node, nibblesKey: ByteArray, store: SimpleKeyValueStore) : KeyValueStore {
+    private fun generateMerkleProof(startNode: Node, nibblesKey: ByteArray, store: SimpleKeyValueStore): KeyValueStore {
         var node = startNode
         var nodeKey = nibblesKey
 
@@ -81,10 +86,11 @@ class PatriciaTrie {
                         throw IllegalArgumentException("Key is not part of the trie")
                     }
                 }
+
                 is BranchNode -> {
                     store.put(node.hash, node.encoded)
 
-                    if(nodeKey.isEmpty()) {
+                    if (nodeKey.isEmpty()) {
                         require(node.value.isNotEmpty()) { "Terminal branch without value" }
                         return store
                     }
@@ -93,6 +99,7 @@ class PatriciaTrie {
                     nodeKey = nodeKey.sliceArray(1 until nodeKey.size)
                     node = node.branches[nextNibble.toInt()]
                 }
+
                 is ExtensionNode -> {
                     if (nodeKey.startsWith(node.path)) {
                         store.put(node.hash, node.encoded)
@@ -102,6 +109,7 @@ class PatriciaTrie {
                         throw IllegalArgumentException("Key is not part of the trie")
                     }
                 }
+
                 else -> throw IllegalArgumentException("Invalid node type")
             }
         }
@@ -142,8 +150,9 @@ class PatriciaTrie {
                             throw IllegalArgumentException("Key is not part of the trie")
                         }
                     }
+
                     is BranchNode -> {
-                        if(nodeKey.isEmpty()) {
+                        if (nodeKey.isEmpty()) {
                             return node.value.contentEquals(expectedValue)
                         }
 
@@ -151,6 +160,7 @@ class PatriciaTrie {
                         nodeKey = nodeKey.sliceArray(1 until nodeKey.size)
                         node.branches[nextNibble.toInt()].hash
                     }
+
                     is ExtensionNode -> {
                         if (nodeKey.startsWith(node.path)) {
                             nodeKey = nodeKey.sliceArray(node.path.size until nodeKey.size)

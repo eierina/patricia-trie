@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package trie
+package utils
 
 /**
  * Convert a ByteArray to nibbles.

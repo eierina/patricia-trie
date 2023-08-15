@@ -19,6 +19,7 @@ package trie
 import org.web3j.rlp.RlpEncoder
 import org.web3j.rlp.RlpList
 import org.web3j.rlp.RlpString
+import utils.toNibbles
 
 /**
  * Represents a LeafNode in a Patricia Trie.

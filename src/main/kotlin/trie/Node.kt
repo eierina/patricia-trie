@@ -21,6 +21,7 @@ import org.web3j.rlp.RlpDecoder
 import org.web3j.rlp.RlpList
 import org.web3j.rlp.RlpString
 import org.web3j.utils.Numeric
+import utils.toNibbles
 
 /**
  * The base class for all types of nodes in a Patricia Trie.

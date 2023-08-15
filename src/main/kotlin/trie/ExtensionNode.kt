@@ -20,6 +20,7 @@ import org.web3j.rlp.RlpDecoder
 import org.web3j.rlp.RlpEncoder
 import org.web3j.rlp.RlpList
 import org.web3j.rlp.RlpString
+import utils.toNibbles
 
 /**
  * Represents an ExtensionNode in a Patricia Trie.
