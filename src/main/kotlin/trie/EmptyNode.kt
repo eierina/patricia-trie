@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package new
+package trie
 
 import org.web3j.rlp.RlpEncoder
 import org.web3j.rlp.RlpString

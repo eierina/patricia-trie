@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package new
+package trie
 
 /**
  * A representation of a node in a Patricia Trie that is used to store a hash and an inner node.

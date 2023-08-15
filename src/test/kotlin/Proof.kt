@@ -1,4 +1,4 @@
-import new.*
+import trie.*
 import org.junit.Assert.*
 import org.junit.Test
 import org.web3j.crypto.Hash

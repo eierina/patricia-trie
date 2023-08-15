@@ -14,10 +14,7 @@
  * limitations under the License.
  */
 
-package new
-
-import KeyValueStore
-import SimpleKeyValueStore
+package trie
 
 /**
  * The Patricia Trie is a space-optimized version of a binary trie.
