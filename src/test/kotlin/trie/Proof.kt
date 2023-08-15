@@ -93,7 +93,7 @@ class ProofTests {
         val pairs = listOf(
             Pair(byteArrayOf(1, 2, 3, 4), "hello1".toByteArray()),
             Pair(byteArrayOf(1, 2, 3, 5), "hello2".toByteArray()),
-            Pair(byteArrayOf(1, 2, 5), "world".toByteArray()),
+            Pair(byteArrayOf(1, 2, 5), "world".toByteArray())
         )
 
         val trie = PatriciaTrie()
