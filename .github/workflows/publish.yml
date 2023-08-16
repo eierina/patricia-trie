@@ -13,9 +13,12 @@ jobs:
         with:
           distribution: 'temurin'
           java-version: 8
+          cache: gradle
       - name: Authenticate to GitHub Packages
         uses: fregante/setup-git-token@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew          
       - name: Publish Kotlin Library
         run: ./gradlew publish

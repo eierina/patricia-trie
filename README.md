@@ -4,4 +4,4 @@ This project is an implementation of a Patricia Trie data structure in Kotlin 1.
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [Apache License](LICENSE).
