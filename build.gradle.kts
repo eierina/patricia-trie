@@ -44,27 +44,22 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach 
 }
 
 publishing {
-//    publications {
-//        create<MavenPublication>("mavenJava") {
-//            from(components["java"])
-//        }
-//    }
     repositories {
         maven {
             name = "GitHubPackages"
             url = uri("https://maven.pkg.github.com/eierina/patricia-trie")
             credentials {
-                username = project.findProperty("gpr.user") ?: System.getenv("GITHUB_USERNAME")
-                password = project.findProperty("gpr.key") ?: System.getenv("GITHUB_TOKEN")
+                username = project.findProperty("gpr.user") as String? ?: System.getenv("GITHUB_USERNAME")
+                password = project.findProperty("gpr.key") as String? ?: System.getenv("GITHUB_TOKEN")
             }
         }
     }
     publications {
-        gpr(MavenPublication) {
-            groupId = project.group
-            version = project.version
-            artifactId = 'patricia-trie'
-            from components.java
+        create<MavenPublication>("gpr") {
+            groupId = project.group.toString()
+            version = project.version.toString()
+            artifactId = "patricia-trie"
+            from(components["java"])
         }
     }
 }
