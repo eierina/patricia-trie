@@ -22,3 +22,6 @@ jobs:
         run: chmod +x gradlew          
       - name: Publish Kotlin Library
         run: ./gradlew publish
+        env:
+          USERNAME: ${{ github.actor }}
+          PASSWORD: ${{ secrets.GITHUB_TOKEN }}
